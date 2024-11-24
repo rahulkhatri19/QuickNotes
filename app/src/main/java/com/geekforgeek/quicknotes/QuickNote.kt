@@ -17,9 +17,14 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,6 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.geekforgeek.quicknotes.NotesRoute.DETAIL_NOTE
+import com.geekforgeek.quicknotes.NotesRoute.EDIT_NOTE
 import com.geekforgeek.quicknotes.ui.theme.BananaMania
 import com.geekforgeek.quicknotes.ui.theme.BlackMetal
 import com.geekforgeek.quicknotes.ui.theme.FrozenSalmon
@@ -36,7 +45,7 @@ import com.geekforgeek.quicknotes.ui.theme.MintChip
 import com.geekforgeek.quicknotes.ui.theme.Sunshine
 
 @Composable
-fun QuickNote() {
+fun QuickNote(navController: NavController) {
 
     val notesType = arrayOf(
         "All (20)", "Important", "Bookmark", "Urgent"
@@ -48,14 +57,23 @@ fun QuickNote() {
     notesList.add(Pair("Tax payment before the end of march", "This is reminder note, do as not forgot to pay tax before the end of march. Dont miss"))
     notesList.add(Pair("Password WiFi gelato cafe near the station", "password WiFi gelato cafe near the station Wh indoor : to reset the wifi password on time to dom get confusion after every 4 weeks. This is a gentle reminder"))
 
-    Box(
-        Modifier.background(BlackMetal)
-    ){
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(EDIT_NOTE)
+                },
+            ) {
+                Icon(Icons.Default.Add, "Add Icon")
+            }
+        },
+        containerColor = BlackMetal
+    ) { innerPadding ->
         Column(
             Modifier.padding(horizontal = 16.dp).fillMaxHeight(),
         ) {
 
-            Spacer(Modifier.height(56.dp))
+            Spacer(Modifier.height(56.dp).padding(innerPadding))
 
             Row {
                 Image(
@@ -103,7 +121,7 @@ fun QuickNote() {
             LazyColumn {
                 itemsIndexed(notesList) { index, list ->
                     Card(
-                        Modifier.padding(bottom = 12.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(bottom = 12.dp).fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = CardDefaults.cardColors(
                             containerColor =
@@ -114,7 +132,10 @@ fun QuickNote() {
                                 3 -> BananaMania
                                 else -> FrozenSalmon
                             }
-                        )
+                        ),
+                        onClick = {
+                            navController.navigate(DETAIL_NOTE)
+                        }
                     ) {
                         Text(
                             modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp),
@@ -140,5 +161,5 @@ fun QuickNote() {
 @Preview(showBackground = true)
 @Composable
 fun DemoNotes() {
-    QuickNote()
+    QuickNote(rememberNavController())
 }

@@ -20,9 +20,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             QuickNotesTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                   // QuickNote()
-//                    DetailNote()
-                    EditNote()
+                    NotesNavigation()
                     Greeting(
                         name = "Android",
                         modifier = Modifier.padding(innerPadding)

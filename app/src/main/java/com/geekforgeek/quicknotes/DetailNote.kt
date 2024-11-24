@@ -10,21 +10,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.geekforgeek.quicknotes.ui.theme.MintChip
 import com.geekforgeek.quicknotes.ui.theme.QuickFreeze
 
 @Composable
-fun DetailNote(){
+fun DetailNote(navController: NavController){
     Box(
         Modifier.background(MintChip)
     ){
@@ -32,10 +36,16 @@ fun DetailNote(){
             Modifier.padding(horizontal = 16.dp).fillMaxHeight()
         ) {
             Spacer(Modifier.height(56.dp))
-            Box (
-                modifier = Modifier.background(QuickFreeze),
-            ){
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back Arrow", modifier = Modifier.padding(all = 8.dp))
+
+            Card(
+                modifier = Modifier.padding(end = 12.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = QuickFreeze),
+                onClick = {
+                    navController.popBackStack()
+                }
+            ) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Back Arrow", modifier = Modifier.padding(all = 8.dp))
             }
 
             Spacer(Modifier.height(16.dp))
