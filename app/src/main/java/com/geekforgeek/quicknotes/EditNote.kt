@@ -14,19 +14,24 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,102 +39,137 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.geekforgeek.quicknotes.NotesRoute.EDIT_NOTE
+import com.geekforgeek.quicknotes.roomDb.NotesDatabase
+import com.geekforgeek.quicknotes.roomDb.NotesRepo
 import com.geekforgeek.quicknotes.ui.theme.MintChip
 import com.geekforgeek.quicknotes.ui.theme.QuickFreeze
 
 @Composable
-fun EditNote(navController: NavController){
+fun EditNote(navController: NavController, id: Int, title: String, description: String) {
 
     var inputTitle by remember { mutableStateOf(TextFieldValue("")) }
     var inputDescription by remember { mutableStateOf(TextFieldValue("")) }
     var isValidTitle by remember { mutableStateOf(true) }
     var isInValidTitle by remember { mutableStateOf(false) }
     var errorTitle by remember { mutableStateOf("") }
+    val notesDatabase = NotesDatabase.getDatabase(LocalContext.current)
+    val notesRepo = NotesRepo(notesDatabase.notesDao())
+    val isNewNote = id == -1
 
-    Box(
-        Modifier.background(MintChip)
-    ){
-        Column(
-            Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxHeight()
-        ) {
-            Spacer(Modifier.height(56.dp))
-            Card(
-                modifier = Modifier.padding(end = 12.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = QuickFreeze),
+    LaunchedEffect(Unit) {
+        inputTitle = TextFieldValue(title)
+        inputDescription = TextFieldValue(description)
+    }
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
                 onClick = {
-                    navController.popBackStack()
-                }
-            ) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Back Arrow", modifier = Modifier.padding(all = 8.dp))
-            }
+                    if (isNewNote) {
+                        notesRepo.insertNotes(title, description)
+                    } else {
+                        notesRepo.updateNotes(id, title, description)
+                    }
 
-            Spacer(Modifier.height(16.dp))
-            TextField(
-                value = inputTitle,
-                onValueChange = {
-                    errorTitle = isValidTitleCondition(it.text)
-                    inputTitle = it
-                    isInValidTitle = errorTitle.length > 2
+                    navController.popBackStack()
                 },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text(
-                        "Title",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
+            ) {
+                Icon(Icons.Default.Add, "Add Icon")
+            }
+        },
+        containerColor = MintChip,
+        content = { innerPadding ->
+            Column(
+                Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxHeight()
+            ) {
+                Spacer(
+                    Modifier
+                        .height(56.dp)
+                        .padding(innerPadding)
+                )
+                Card(
+                    modifier = Modifier.padding(end = 12.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = QuickFreeze),
+                    onClick = {
+                        navController.popBackStack()
+                    }
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        "Back Arrow",
+                        modifier = Modifier.padding(all = 8.dp)
                     )
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MintChip,
-                    unfocusedContainerColor = MintChip,
-                    unfocusedIndicatorColor = MintChip,
-                    focusedIndicatorColor = MintChip,
-                    errorContainerColor = MintChip
-                ),
-                textStyle = TextStyle.Default.copy(
-                    fontSize = 28.sp, fontWeight = FontWeight.Bold
-                ),
-                maxLines = 2,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                isError = isInValidTitle
-            )
-            if (!isValidTitle){
-                Text(
-                    text = errorTitle,
-                    color = Color.Red
+                }
+
+                Spacer(Modifier.height(16.dp))
+                TextField(
+                    value = inputTitle,
+                    onValueChange = {
+                        errorTitle = isValidTitleCondition(it.text)
+                        inputTitle = it
+                        isInValidTitle = errorTitle.length > 2
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            "Title",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MintChip,
+                        unfocusedContainerColor = MintChip,
+                        unfocusedIndicatorColor = MintChip,
+                        focusedIndicatorColor = MintChip,
+                        errorContainerColor = MintChip
+                    ),
+                    textStyle = TextStyle.Default.copy(
+                        fontSize = 28.sp, fontWeight = FontWeight.Bold
+                    ),
+                    maxLines = 2,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    isError = isInValidTitle
+                )
+                if (!isValidTitle) {
+                    Text(
+                        text = errorTitle,
+                        color = Color.Red
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                TextField(
+                    value = inputDescription,
+                    onValueChange = {
+                        inputDescription = it
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            "Notes Description",
+                            fontSize = 18.sp
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MintChip,
+                        unfocusedContainerColor = MintChip,
+                        unfocusedIndicatorColor = MintChip,
+                        focusedIndicatorColor = MintChip
+                    ),
+                    textStyle = TextStyle.Default.copy(
+                        fontSize = 18.sp
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
             }
-
-            Spacer(Modifier.height(16.dp))
-
-            TextField(
-                value = inputDescription,
-                onValueChange = {
-                    inputDescription = it
-                },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text(
-                        "Notes Description",
-                        fontSize = 18.sp
-                    )
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MintChip,
-                    unfocusedContainerColor = MintChip,
-                    unfocusedIndicatorColor = MintChip,
-                    focusedIndicatorColor = MintChip
-                ),
-                textStyle = TextStyle.Default.copy(
-                    fontSize = 18.sp
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
-            )
         }
-    }
+    )
 }
 
 fun isValidTitleCondition(input: String): String {
@@ -138,12 +178,11 @@ fun isValidTitleCondition(input: String): String {
 
     return if (input.length < 3) {
         "Please add a Long Title"
-    } else if (input.contains("%")){
+    } else if (input.contains("%")) {
         "Please Do not add % sign"
-    } else if(input.contains(numberRegex)){
+    } else if (input.contains(numberRegex)) {
         "Please do not add Numbers"
-    }
-    else {
+    } else {
         ""
     }
 }
